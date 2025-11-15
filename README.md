@@ -63,3 +63,29 @@ Refer to TTN documentation for generating and managing your LoRaWAN keys: [https
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Home Assistant Integration
+
+You can integrate the LoRaWAN Battery Node data from TTN into Home Assistant for real-time monitoring and automation.
+
+1. Configure the TTN integration in Home Assistant by adding your application and device details.
+2. Use the following YAML example to define sensors that represent battery status data received from TTN:
+
+```yaml
+sensor:
+  - platform: mqtt
+    name: "Battery Voltage"
+    state_topic: "ttn/<application_id>/devices/<device_id>/up"
+    value_template: "{{ value_json.uplink_message.decoded_payload.battery_voltage }}"
+    unit_of_measurement: "V"
+
+  - platform: mqtt
+    name: "Battery Level"
+    state_topic: "ttn/<application_id>/devices/<device_id>/up"
+    value_template: "{{ value_json.uplink_message.decoded_payload.battery_level }}"
+    unit_of_measurement: "%"
+```
+
+Replace `<application_id>` and `<device_id>` with your TTN application and device identifiers. Adjust the `value_template` paths according to your payload structure.
+
+For more details on setting up MQTT and TTN integration with Home Assistant, refer to the official Home Assistant documentation: [https://www.home-assistant.io/integrations/mqtt/](https://www.home-assistant.io/integrations/mqtt/)
