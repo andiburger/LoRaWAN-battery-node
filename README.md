@@ -35,6 +35,44 @@ The LoRaWAN Battery Node project demonstrates how to build a low-power battery m
    - Configure your LoRaWAN keys and settings (see Configuration below).
    - Upload the sketch to the T-Beam.
 
+## PlatformIO Setup
+
+You can also build and upload the firmware using PlatformIO, which offers a powerful and flexible development environment.
+
+1. **Install PlatformIO:**
+   - Install Visual Studio Code if you haven't already: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+   - Install the PlatformIO extension from the VSCode marketplace.
+
+2. **Open the Project:**
+   - Open the project folder containing the source code and `platformio.ini` file in VSCode.
+
+3. **Configure `platformio.ini`:**
+   - Create or edit the `platformio.ini` file with the following example configuration:
+
+   ```ini
+   [env:tbeam]
+   platform = espressif32
+   board = ttgo-lora32-v2
+   framework = arduino
+   monitor_speed = 115200
+   build_flags =
+       -DCORE_DEBUG_LEVEL=5
+       -DDEEP_SLEEP_ENABLED
+   ```
+
+   - The `build_flags` allow you to enable debug output and optimize for deep sleep power saving.
+
+4. **Build and Upload:**
+   - Use the PlatformIO sidebar or command palette to build the project (`PlatformIO: Build`).
+   - Connect your T-Beam via USB.
+   - Upload the firmware using `PlatformIO: Upload`.
+
+5. **Monitor Serial Output:**
+   - Open the serial monitor with `PlatformIO: Monitor` to view debug messages and sensor data.
+   - Ensure the baud rate matches `monitor_speed` (115200 in the example).
+
+PlatformIO provides better dependency management and build customization compared to the Arduino IDE, making it ideal for advanced users and continuous integration setups.
+
 ## Configuration
 
 Before uploading, configure the following parameters in the sketch or configuration file:
