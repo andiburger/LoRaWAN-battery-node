@@ -37,9 +37,12 @@ const lmic_pinmap lmic_pins = {
 // ----------------------------
 // BLE Battery Guard
 // ----------------------------
-int batteryLevel = 0;
+#include <vector>
+std::vector<int> batteryLevels;
 
-int readBattery() {
+void readBatteryGuards() {
+    batteryLevels.clear();
+
     BLEScan* scan = BLEDevice::getScan();
     scan->setActiveScan(true);
     BLEScanResults results = scan->start(5); // 5 Sekunden Scan
@@ -53,29 +56,45 @@ int readBattery() {
 
             if (manData.length() >= 2) {
                 int mv = (d[0] << 8) | d[1]; // Spannung in mV
-                batteryLevel = mv / 1000;    // Volt
-                Serial.printf("Battery Guard gefunden: %d V\n", batteryLevel);
-                return batteryLevel;
+                int voltage = mv / 1000;    // Volt
+                batteryLevels.push_back(voltage);
             }
         }
     }
 
-    Serial.println("Battery Guard nicht gefunden, vorheriger Wert verwendet");
-    return batteryLevel;
+    if (batteryLevels.size() > 0) {
+        Serial.print("Gefundene Battery Guard Spannungen (V): ");
+        for (size_t i = 0; i < batteryLevels.size(); i++) {
+            Serial.printf("%d", batteryLevels[i]);
+            if (i < batteryLevels.size() - 1) Serial.print(", ");
+        }
+        Serial.println();
+    } else {
+        Serial.println("Keine Battery Guard Sensoren gefunden");
+    }
 }
 
 // ----------------------------
 // LoRa send
 // ----------------------------
 void do_send(osjob_t* j){
-    int batt = readBattery();
+    readBatteryGuards();
 
-    byte payload[2];
-    payload[0] = batt; // Batterie %
-    payload[1] = 0;    // optional Temperatur o.ä.
+    byte payload[4] = {0,0,0,0};
+    size_t count = batteryLevels.size() < 4 ? batteryLevels.size() : 4;
+
+    for (size_t i = 0; i < count; i++) {
+        payload[i] = batteryLevels[i];
+    }
 
     LMIC_setTxData2(1, payload, sizeof(payload), 0);
-    Serial.printf("LoRaWAN uplink gesendet: Batterie %d%%\n", batt);
+
+    Serial.print("LoRaWAN uplink gesendet: Batterie Spannungen (V) ");
+    for (size_t i = 0; i < count; i++) {
+        Serial.printf("%d", payload[i]);
+        if (i < count - 1) Serial.print(", ");
+    }
+    Serial.println();
 
     // Deep Sleep starten
     Serial.println("Entering deep sleep for 10 minutes...");
