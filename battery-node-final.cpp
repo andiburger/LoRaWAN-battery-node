@@ -22,7 +22,7 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 void os_getDevKey (u1_t* buf) { memcpy_P(buf, APPKEY, 16);}
 
 static osjob_t sendjob;
-const unsigned TX_INTERVAL = 600; // 10 Minuten (600 Sekunden)
+const unsigned TX_INTERVAL = 600; // 10 minutes (600 seconds)
 
 // ----------------------------
 // Pin mapping T-Beam SX1262
@@ -45,7 +45,7 @@ void readBatteryGuards() {
 
     BLEScan* scan = BLEDevice::getScan();
     scan->setActiveScan(true);
-    BLEScanResults results = scan->start(5); // 5 Sekunden Scan
+    BLEScanResults results = scan->start(5); // 5 seconds scan
 
     for (int i = 0; i < results.getCount(); i++) {
         BLEAdvertisedDevice device = results.getDevice(i);
@@ -55,22 +55,22 @@ void readBatteryGuards() {
             const uint8_t* d = (const uint8_t*)manData.data();
 
             if (manData.length() >= 2) {
-                int mv = (d[0] << 8) | d[1]; // Spannung in mV
-                int voltage = mv / 1000;    // Volt
+                int mv = (d[0] << 8) | d[1]; // Voltage in mV
+                int voltage = mv / 1000;    // Volts
                 batteryLevels.push_back(voltage);
             }
         }
     }
 
     if (batteryLevels.size() > 0) {
-        Serial.print("Gefundene Battery Guard Spannungen (V): ");
+        Serial.print("Found Battery Guard voltages (V): ");
         for (size_t i = 0; i < batteryLevels.size(); i++) {
             Serial.printf("%d", batteryLevels[i]);
             if (i < batteryLevels.size() - 1) Serial.print(", ");
         }
         Serial.println();
     } else {
-        Serial.println("Keine Battery Guard Sensoren gefunden");
+        Serial.println("No Battery Guard sensors found");
     }
 }
 
@@ -80,23 +80,49 @@ void readBatteryGuards() {
 void do_send(osjob_t* j){
     readBatteryGuards();
 
-    byte payload[4] = {0,0,0,0};
+    byte payload[4];
     size_t count = batteryLevels.size() < 4 ? batteryLevels.size() : 4;
 
-    for (size_t i = 0; i < count; i++) {
-        payload[i] = batteryLevels[i];
+    if (count > 0) {
+        for (size_t i = 0; i < count; i++) {
+            payload[i] = batteryLevels[i];
+        }
+        // Fill remaining slots with 0 if fewer than 4 readings
+        for (size_t i = count; i < 4; i++) {
+            payload[i] = 0;
+        }
+    } else {
+        // No sensors found, fill payload with 0xFF to indicate no sensor
+        for (size_t i = 0; i < 4; i++) {
+            payload[i] = 0xFF;
+        }
     }
 
     LMIC_setTxData2(1, payload, sizeof(payload), 0);
 
-    Serial.print("LoRaWAN uplink gesendet: Batterie Spannungen (V) ");
-    for (size_t i = 0; i < count; i++) {
-        Serial.printf("%d", payload[i]);
-        if (i < count - 1) Serial.print(", ");
+    Serial.print("LoRaWAN uplink sent: Battery voltages (V) ");
+    if (count > 0) {
+        for (size_t i = 0; i < count; i++) {
+            Serial.printf("%d", payload[i]);
+            if (i < count - 1) Serial.print(", ");
+        }
+        if (count < 4) {
+            Serial.print(", ");
+            for (size_t i = count; i < 4; i++) {
+                Serial.printf("0");
+                if (i < 3) Serial.print(", ");
+            }
+        }
+    } else {
+        Serial.print("No sensors found, sent fallback payload: ");
+        for (size_t i = 0; i < 4; i++) {
+            Serial.printf("0xFF");
+            if (i < 3) Serial.print(", ");
+        }
     }
     Serial.println();
 
-    // Deep Sleep starten
+    // Start deep sleep
     Serial.println("Entering deep sleep for 10 minutes...");
     esp_sleep_enable_timer_wakeup(TX_INTERVAL * 1000000ULL);
     esp_deep_sleep_start();
@@ -109,7 +135,7 @@ void setup() {
     Serial.begin(115200);
     delay(100);
 
-    // GPS deaktivieren (Pin EN auf LOW)
+    // Disable GPS (Pin EN to LOW)
     pinMode(12, OUTPUT); 
     digitalWrite(12, LOW);
 
@@ -122,7 +148,7 @@ void setup() {
 
     delay(1000);
 
-    // Job starten
+    // Start job
     do_send(&sendjob);
 }
 
