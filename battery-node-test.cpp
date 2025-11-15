@@ -1,10 +1,6 @@
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
-#include <Wire.h>
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEScan.h>
 
 // ----------------------------
 // TTN OTAA Keys
@@ -21,7 +17,7 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 void os_getDevKey (u1_t* buf) { memcpy_P(buf, APPKEY, 16);}
 
 static osjob_t sendjob;
-const unsigned TX_INTERVAL = 600; // 10 Minuten (600 Sekunden)
+const unsigned TX_INTERVAL = 30; // 30 seconds
 
 // ----------------------------
 // Pin mapping T-Beam SX1262
@@ -34,29 +30,19 @@ const lmic_pinmap lmic_pins = {
 };
 
 // ----------------------------
-// BLE Battery Guard
-// ----------------------------
-BLEAddress batteryAddr("xx:xx:xx:xx:xx:xx"); // MAC deines Intact Battery Guard
-int batteryLevel = 0;
-
-int readBattery() {
-    // TODO: Hier BLE-Scan und GATT-Lese-Logik einfügen
-    // Beispiel: batteryLevel = 80; // Testwert
-    return batteryLevel;
-}
-
-// ----------------------------
-// LoRa send
+// Send fixed test payload
 // ----------------------------
 void do_send(osjob_t* j){
-    int batt = readBattery();
-
-    byte payload[2];
-    payload[0] = batt; // % Batterie
-    payload[1] = 0;    // optional Temperatur o.ä.
+    byte payload[2] = {0xAB, 0xCD}; // fixed test payload
 
     LMIC_setTxData2(1, payload, sizeof(payload), 0);
-    Serial.println("LoRaWAN uplink gesendet!");
+    Serial.print("Sending fixed payload: 0x");
+    Serial.print(payload[0], HEX);
+    Serial.print(" 0x");
+    Serial.println(payload[1], HEX);
+
+    // Schedule next transmission
+    os_setTimedCallback(&sendjob, os_getTime()+sec2osticks(TX_INTERVAL), do_send);
 }
 
 // ----------------------------
@@ -64,17 +50,16 @@ void do_send(osjob_t* j){
 // ----------------------------
 void setup() {
     Serial.begin(115200);
+    delay(100); // allow time for serial monitor to start
 
-    // GPS deaktivieren (Pin EN kann auf LOW gesetzt werden, falls vorhanden)
-    pinMode(12, OUTPUT); // EN Pin GPS
-    digitalWrite(12, LOW);
+    Serial.println("Starting LoRaWAN test...");
 
     // LoRa Init
     os_init();
     LMIC_reset();
 
-    // Deep Sleep vorbereiten
-    os_setCallback(&sendjob, do_send);
+    // Start job
+    do_send(&sendjob);
 }
 
 void loop() {
