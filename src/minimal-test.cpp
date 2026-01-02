@@ -13,18 +13,18 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 // joinEUI - previous versions of LoRaWAN called this AppEUI
 // for development purposes you can use all zeros - see wiki for details
-#define RADIOLIB_LORAWAN_JOIN_EUI  0x70B3D57ED0000001
+#define RADIOLIB_LORAWAN_JOIN_EUI  0x70B3D57ED0000001ULL
 
 
 // the Device EUI & two keys can be generated on the TTN console
 #ifndef RADIOLIB_LORAWAN_DEV_EUI   
-#define RADIOLIB_LORAWAN_DEV_EUI  0x70B3D57ED0000001
+#define RADIOLIB_LORAWAN_DEV_EUI  0x70B3D57ED00740EAULL
 #endif
 #ifndef RADIOLIB_LORAWAN_APP_KEY   
-#define RADIOLIB_LORAWAN_APP_KEY   0x70, 0xB3, 0xD5, 0x7E, 0xD0, 0x00, 0x00, 0x01
+#define RADIOLIB_LORAWAN_APP_KEY   0xB7, 0x90, 0x87, 0x00, 0xD0, 0x06, 0x55, 0xA2, 0xD3, 0x6F, 0x9A, 0xD7, 0x23, 0x76, 0x63, 0x77
 #endif
 #ifndef RADIOLIB_LORAWAN_NWK_KEY   // Put your Nwk Key here
-#define RADIOLIB_LORAWAN_NWK_KEY   0
+#define RADIOLIB_LORAWAN_NWK_KEY   0xB7, 0x90, 0x87, 0x00, 0xD0, 0x06, 0x55, 0xA2, 0xD3, 0x6F, 0x9A, 0xD7, 0x23, 0x76, 0x63, 0x77
 #endif
 
 // how often to send an uplink - consider legal & FUP constraints - see notes
@@ -44,7 +44,7 @@ uint64_t devEUI  =   RADIOLIB_LORAWAN_DEV_EUI;
 uint8_t appKey[] = { RADIOLIB_LORAWAN_APP_KEY };
 uint8_t nwkKey[] = { RADIOLIB_LORAWAN_NWK_KEY };
 
-LoRaWANNode node(&radio, &EU868, 0);
+LoRaWANNode node(&radio, &Region, 0);
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 
 
@@ -146,6 +146,8 @@ void arrayDump(uint8_t *buffer, uint16_t len)
 
 void setup() {
     Serial.begin(115200);
+
+    while (!Serial);
     delay(3000);
     Serial.println("Setup start");
 
@@ -153,6 +155,7 @@ void setup() {
     #ifdef  RADIO_TCXO_ENABLE
     pinMode(RADIO_TCXO_ENABLE, OUTPUT);
     digitalWrite(RADIO_TCXO_ENABLE, HIGH);
+    Serial.println("TCXO enabled");
     #endif
 
     delay(5000);  // Give time to switch to the serial monitor
@@ -185,6 +188,7 @@ void setup() {
             Serial.println(F("Failed to set DIO2 as RF switch!"));
             while (true);
         }
+        Serial.println(F("DIO2 configured as RF switch."));
     #endif //USING_SX1262
     #endif //USING_DIO2_AS_RF_SWITCH
     #ifdef RADIO_SWITCH_PIN
@@ -250,7 +254,7 @@ void setup() {
     uint8_t joinDR = 4;
 
     // Setup the OTAA session information
-    node.beginOTAA(joinEUI, devEUI, (const uint8_t*)nwkKey, (const uint8_t*)appKey);
+    node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
     // ##### setup the flash storage
     store.begin("radiolib");
     store.clear(); 
@@ -292,7 +296,7 @@ void setup() {
 
         Serial.println(F("[LoRaWAN][DEBUG] Sending Join request (OTAA)..."));
         state = node.activateOTAA();
-
+    
         if (state == RADIOLIB_LORAWAN_NEW_SESSION) {
             Serial.println(F("[LoRaWAN][DEBUG] Downlink (Join-Accept) received!"));
         } else {
@@ -301,6 +305,7 @@ void setup() {
         Serial.print(F("[LoRaWAN][DEBUG] RSSI after join attempt: "));
         Serial.print(radio.getRSSI());
         Serial.println(F(" dBm"));
+        Serial.println(radio.getRSSI());
         Serial.print(F("[LoRaWAN][DEBUG] SNR after join attempt: "));
         Serial.print(radio.getSNR());
         Serial.println(F(" dB"));
@@ -351,6 +356,18 @@ void setup() {
 
     // Enable the dwell time limits - 400ms is the limit for the US
     node.setDwellTime(true, 400);
+
+    if (u8g2) {
+        u8g2->clearBuffer();
+        u8g2->setFont(u8g2_font_NokiaLargeBold_tf );
+        uint16_t str_w =  u8g2->getStrWidth(BOARD_VARIANT_NAME);
+        u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
+        u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
+
+        u8g2->setCursor(0, 38);
+        u8g2->print("Join LoRaWAN Ready!");
+        u8g2->sendBuffer();
+    }
 
     Serial.println(F("Ready!\n"));
 

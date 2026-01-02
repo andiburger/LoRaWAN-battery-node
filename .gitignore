@@ -36,6 +36,17 @@
 *.exe
 *.out
 *.app
+*.elf
 
 # debug information files
 *.dwo
+
+# PlatformIO
+.pio/
+lib/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
