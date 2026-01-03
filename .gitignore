@@ -84,3 +84,4 @@ lib/*.dwo
 
 # project specific
 build_log.txt
+src/keys.h

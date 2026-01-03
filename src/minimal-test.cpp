@@ -1,5 +1,6 @@
 #include <RadioLib.h>
 #include "LoRaBoards.h"
+#include "keys.h"
 
 #include <Preferences.h>
 Preferences store;
@@ -7,25 +8,7 @@ Preferences store;
 SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 
-// ----------------------------
-// TTN OTAA Keys
-// ----------------------------
 
-// joinEUI - previous versions of LoRaWAN called this AppEUI
-// for development purposes you can use all zeros - see wiki for details
-#define RADIOLIB_LORAWAN_JOIN_EUI  0x00000000000000
-
-
-// the Device EUI & two keys can be generated on the TTN console
-#ifndef RADIOLIB_LORAWAN_DEV_EUI   
-#define RADIOLIB_LORAWAN_DEV_EUI  0x00000000000000
-#endif
-#ifndef RADIOLIB_LORAWAN_APP_KEY   
-#define RADIOLIB_LORAWAN_APP_KEY   0x0
-#endif
-#ifndef RADIOLIB_LORAWAN_NWK_KEY   // Put your Nwk Key here
-#define RADIOLIB_LORAWAN_NWK_KEY   0x0
-#endif
 
 // how often to send an uplink - consider legal & FUP constraints - see notes
 const uint32_t uplinkIntervalSeconds = 5UL * 60UL;    // minutes x seconds
