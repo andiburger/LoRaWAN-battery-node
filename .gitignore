@@ -43,11 +43,38 @@
 
 # PlatformIO
 .pio/
-lib/*
 
+# Ignore common unwanted files in lib/, but allow submodules and folders
+lib/*.a
+lib/*.o
+lib/*.obj
+lib/*.so
+lib/*.dll
+lib/*.dylib
+lib/*.exe
+lib/*.out
+lib/*.app
+lib/*.elf
+lib/*.d
+lib/*.lo
+lib/*.slo
+lib/*.gch
+lib/*.pch
+lib/*.mod
+lib/*.smod
+lib/*.lai
+lib/*.la
+lib/*.lib
+lib/*.pdb
+lib/*.ilk
+lib/*.dwo
+
+# Allow all folders and submodules in lib/
+!lib/
 !lib/**/
 !lib/**/.git
 !lib/**/.gitmodules
+!.gitmodules
 
 # VS Code
 .vscode/
