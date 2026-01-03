@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <RadioLib.h>
+#include "LoRaBoards.h"
 
 // T-Beam SX1262 Pins
 #define RADIO_CS_PIN    18
-#define RADIO_DIO1_PIN   26
+#define RADIO_DIO1_PIN   33
 #define RADIO_RST_PIN    23
-#define RADIO_BUSY_PIN   19
+#define RADIO_BUSY_PIN   32
 #define RADIO_TCXO_ENABLE 4  // falls TCXO Board (T-Beam V1.1+)
 
 // SX1262 Radio Objekt
@@ -16,13 +17,15 @@ void setup() {
   delay(2000);
   Serial.println("T-Beam SX1262 RX Test");
 
+  setupBoards();
+
   // TCXO einschalten
   pinMode(RADIO_TCXO_ENABLE, OUTPUT);
   digitalWrite(RADIO_TCXO_ENABLE, HIGH);
   delay(5);
 
   // Radio initialisieren (868 MHz, 125 kHz, SF7, CR 4/5, 14 dBm, TCXO aktiviert)
-  int state = radio.begin(868.1, 125.0, 7, 5, 0x34, 14, 0, 0, true);
+  int state = radio.begin(868.1);
   if(state != RADIOLIB_ERR_NONE){
     Serial.print("Radio init failed, code: ");
     Serial.println(state);
@@ -30,7 +33,7 @@ void setup() {
   }
 
   // Optional: DIO2 als RF-Switch konfigurieren, falls Board benötigt
-  // radio.setDio2AsRfSwitch();
+  radio.setDio2AsRfSwitch();
 
   Serial.println("Radio initialized successfully.");
 }
