@@ -43,7 +43,11 @@
 
 # PlatformIO
 .pio/
-lib/
+lib/*
+
+!lib/**/
+!lib/**/.git
+!lib/**/.gitmodules
 
 # VS Code
 .vscode/
