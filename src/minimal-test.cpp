@@ -13,18 +13,18 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 // joinEUI - previous versions of LoRaWAN called this AppEUI
 // for development purposes you can use all zeros - see wiki for details
-#define RADIOLIB_LORAWAN_JOIN_EUI  0x70B3D57ED0000001ULL
+#define RADIOLIB_LORAWAN_JOIN_EUI  0x00000000000000
 
 
 // the Device EUI & two keys can be generated on the TTN console
 #ifndef RADIOLIB_LORAWAN_DEV_EUI   
-#define RADIOLIB_LORAWAN_DEV_EUI  0x70B3D57ED00740EAULL
+#define RADIOLIB_LORAWAN_DEV_EUI  0x00000000000000
 #endif
 #ifndef RADIOLIB_LORAWAN_APP_KEY   
-#define RADIOLIB_LORAWAN_APP_KEY   0xB7, 0x90, 0x87, 0x00, 0xD0, 0x06, 0x55, 0xA2, 0xD3, 0x6F, 0x9A, 0xD7, 0x23, 0x76, 0x63, 0x77
+#define RADIOLIB_LORAWAN_APP_KEY   0x0
 #endif
 #ifndef RADIOLIB_LORAWAN_NWK_KEY   // Put your Nwk Key here
-#define RADIOLIB_LORAWAN_NWK_KEY   0xB7, 0x90, 0x87, 0x00, 0xD0, 0x06, 0x55, 0xA2, 0xD3, 0x6F, 0x9A, 0xD7, 0x23, 0x76, 0x63, 0x77
+#define RADIOLIB_LORAWAN_NWK_KEY   0x0
 #endif
 
 // how often to send an uplink - consider legal & FUP constraints - see notes
