@@ -50,3 +50,6 @@ lib/
 
 # macOS
 .DS_Store
+
+# project specific
+build_log.txt
