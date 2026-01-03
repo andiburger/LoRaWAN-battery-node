@@ -74,24 +74,40 @@ PlatformIO is recommended for building, dependency management, and upload.
 
 ## Configuration
 
-Before uploading, configure these parameters:
+### LoRaWAN Keys Setup (`keys.h`)
 
-- **LoRaWAN Keys (OTAA):**
-  - `DEV_EUI`
-  - `APP_EUI`
-  - `APP_KEY`
-  
-  Make sure you use the format required by RadioLib OTAA examples (no LSB swap).
+Before uploading the firmware, you must provide your LoRaWAN OTAA keys in a file named `keys.h`. This file is not included in the repository for security reasons.
 
-- **TTN Frequency Plan:**
-  - Example: EU868
-  - Confirm that your region matches TTN settings.
+#### 1. Create `keys.h`
 
-- **BLE Settings:**
-  - Set the correct BLE address or device name for the Intact Battery Guard.
+In the root of the project (or as specified in the code), create a new file called `keys.h` with the following contents:
 
-- **Deep Sleep:**
-  - Adjust `DEEP_SLEEP_ENABLED` and sleep duration in your sketch if using low-power mode.
+```cpp
+#pragma once
+
+// LoRaWAN OTAA keys (replace with your actual values)
+static const char *dev_eui = "YOUR_DEVICE_EUI";
+static const char *app_eui = "YOUR_APPLICATION_EUI";
+static const char *app_key = "YOUR_APPLICATION_KEY";
+```
+
+Replace `YOUR_DEVICE_EUI`, `YOUR_APPLICATION_EUI`, and `YOUR_APPLICATION_KEY` with the values from The Things Network (TTN) console. Use the exact format provided by TTN (typically 16-character hexadecimal strings, e.g., `"70B3D57ED004B5C1"`). **Do not swap byte order**—the code expects the standard TTN format.
+
+#### 2. Add `keys.h` to `.gitignore`
+
+To avoid accidentally committing your keys, ensure your `.gitignore` file contains the line:
+
+```
+keys.h
+```
+
+This will prevent `keys.h` from being tracked by git.
+
+#### 3. Additional Configuration
+
+- **TTN Frequency Plan:** Set your region (e.g., EU868) in the code and TTN console to match.
+- **BLE Settings:** Update the BLE address or device name in the code to match your Intact Battery Guard sensor.
+- **Deep Sleep:** Adjust `DEEP_SLEEP_ENABLED` and the sleep duration in the code as needed for your use case.
 
 ---
 
