@@ -84,4 +84,6 @@ lib/*.dwo
 
 # project specific
 build_log.txt
+RadioLib_OTAA.ino
 src/keys.h
+src/notes.md
