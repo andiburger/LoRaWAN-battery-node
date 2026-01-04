@@ -80,18 +80,27 @@ Before uploading the firmware, you must provide your LoRaWAN OTAA keys in a file
 
 #### 1. Create `keys.h`
 
-In the root of the project (or as specified in the code), create a new file called `keys.h` with the following contents:
+In the root of the project (or as specified in the code), create a new file called `keys.h` (see keys.h.tmp file) with the following contents:
 
 ```cpp
 #pragma once
+#define RADIOLIB_LORAWAN_JOIN_EUI  0x0000000000000000
 
-// LoRaWAN OTAA keys (replace with your actual values)
-static const char *dev_eui = "YOUR_DEVICE_EUI";
-static const char *app_eui = "YOUR_APPLICATION_EUI";
-static const char *app_key = "YOUR_APPLICATION_KEY";
+
+
+// the Device EUI & two keys can be generated on the TTN console
+#ifndef RADIOLIB_LORAWAN_DEV_EUI   
+#define RADIOLIB_LORAWAN_DEV_EUI  0x0000000000000000
+#endif
+#ifndef RADIOLIB_LORAWAN_APP_KEY   
+#define RADIOLIB_LORAWAN_APP_KEY   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+#endif
+#ifndef RADIOLIB_LORAWAN_NWK_KEY   // Put your Nwk Key here
+#define RADIOLIB_LORAWAN_NWK_KEY   0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0
+#endif
 ```
 
-Replace `YOUR_DEVICE_EUI`, `YOUR_APPLICATION_EUI`, and `YOUR_APPLICATION_KEY` with the values from The Things Network (TTN) console. Use the exact format provided by TTN (typically 16-character hexadecimal strings, e.g., `"70B3D57ED004B5C1"`). **Do not swap byte order**—the code expects the standard TTN format.
+Replace `RADIOLIB_LORAWAN_DEV_EUI`, `RADIOLIB_LORAWAN_APP_KEY`, and `RADIOLIB_LORAWAN_NWK_KEY` with the values from The Things Network (TTN) console. Use the exact format provided by TTN (typically 16-character hexadecimal strings, e.g., `"7864902458302"`). **Do not swap byte order**—the code expects the standard TTN format.
 
 #### 2. Add `keys.h` to `.gitignore`
 
