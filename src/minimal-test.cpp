@@ -1,6 +1,7 @@
 #include <RadioLib.h>
 #include "LoRaBoards.h"
 #include "keys.h"
+#include "ble_battery_guard.h"
 
 #include <Preferences.h>
 Preferences store;
@@ -232,7 +233,8 @@ void setup() {
     radio.setDio2AsRfSwitch();*/
 
     Serial.println("Radio initialized successfully");
-
+    // ##### initialize BLE battery guard
+    bleBatteryInit();
     // Override the default join rate
     uint8_t joinDR = 4;
 
@@ -240,7 +242,7 @@ void setup() {
     node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
     // ##### setup the flash storage
     store.begin("radiolib");
-    store.clear(); 
+    //store.clear(); 
     // ##### if we have previously saved nonces, restore them and try to restore session as well
     if (store.isKey("nonces")) {
         uint8_t buffer[RADIOLIB_LORAWAN_NONCES_BUF_SIZE];                                       // create somewhere to store nonces
@@ -373,13 +375,18 @@ void loop() {
     // Instead of reading any real sensor, we just generate some random numbers as example
     uint8_t value1 = radio.random(100);
     uint16_t value2 = radio.random(2000);
+    // ##### let BLE battery guard do its thing
+    bleBatteryLoop();
 
-    // Build payload byte array
-    uint8_t uplinkPayload[3];
-    uplinkPayload[0] = value1;
-    uplinkPayload[1] = highByte(value2);   // See notes for high/lowByte functions
-    uplinkPayload[2] = lowByte(value2);
+    uint16_t voltageMv = battery.valid ? battery.voltage * 1000 : 0;
+    int8_t tempC = battery.valid ? battery.temperature : 0;
 
+    uint8_t uplinkPayload[4];
+    uplinkPayload[0] = highByte(voltageMv);
+    uplinkPayload[1] = lowByte(voltageMv);
+    uplinkPayload[2] = tempC;
+    uplinkPayload[3] = battery.status;
+    
     uint8_t downlinkPayload[10];  // Make sure this fits your plans!
     size_t  downlinkSize;         // To hold the actual payload size received
 
