@@ -20,6 +20,23 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
         // RSSI is the signal strength
         Serial.print(" | RSSI: ");
         Serial.println(advertisedDevice.getRSSI());
+
+        // Check for service UUID 0xFFF0 (Intact Battery Guard Manufacturer Service)
+        if (advertisedDevice.isAdvertisingService(BLEUUID((uint16_t)0xFFF0))) {
+            Serial.println(">>> Battery Guard detected!");
+            // If Manufacturer Data is present, print it hex
+            if (advertisedDevice.haveManufacturerData()) {
+                std::string mfgData = advertisedDevice.getManufacturerData();
+                Serial.print("Manufacturer Data: ");
+                for (size_t i = 0; i < mfgData.length(); i++) {
+                    if (mfgData[i] < 16) Serial.print("0");
+                    Serial.print((uint8_t)mfgData[i], HEX);
+                    Serial.print(" ");
+                }
+                Serial.println();
+            }
+        }
+        // TODO check for advertised services or manufacturer data to identify battery devices
     }
 };
 
